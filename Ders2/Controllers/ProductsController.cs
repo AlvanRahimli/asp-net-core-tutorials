@@ -1,6 +1,7 @@
 ﻿using Ders2.Data;
 using Ders2.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,7 +22,12 @@ namespace Ders2.Controllers
         [HttpGet("")]
         public IActionResult GetAll()
         {
-            var products = _context.Products.ToList();
+            var products = _context.CategoryProducts
+                .AsNoTracking()
+                .Include(cp => cp.Product)
+                .Include(cp => cp.Category)
+                .Where(cp => cp.CategoryId == 3)
+                .ToList();
 
             if (products.Count <= 0 || products == null)
             {
@@ -33,15 +39,32 @@ namespace Ders2.Controllers
             }
         }
 
-        [HttpPost("new")]
-        public IActionResult AddProduct(Product newProduct)
+        [HttpGet("detailed/{id}")]
+        public IActionResult GetDetailed(int id)
         {
-            _context.Products.Add(newProduct);
+            var product = _context.Products
+                // .Include(p => p.Category)
+                .AsNoTracking()
+                .FirstOrDefault(p => p.Id == id);
+
+            if (product == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(product);
+        }
+
+        [HttpPost("new")]
+        public IActionResult AddProduct(CategoryProduct newPair)
+        {
+            _context.CategoryProducts.Add(newPair);
+
             int dbRes = _context.SaveChanges();
 
             if (dbRes > 0)
             {
-                return Ok(newProduct);
+                return Ok(newPair);
             }
             else
             {

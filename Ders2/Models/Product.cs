@@ -15,5 +15,7 @@ namespace Ders2.Models
         public string Name { get; set; }
         [Range(0, int.MaxValue)]
         public int Price { get; set; }
+
+        public List<CategoryProduct> Categories { get; set; }
     }
 }
